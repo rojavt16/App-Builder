@@ -59,6 +59,36 @@ application:
               require-adobe-auth: false
               include-ims-credentials: true
               final: true
+
+          # ---- Catalog ---------------------------------------------------------
+          # Writing to the catalog is privileged, so ingest requires a storefront
+          # user token. It pulls the feed from PRODUCTS_API_URL by default.
+          ingest:
+            function: actions/products/ingest.js
+            web: 'yes'
+            runtime: nodejs:22
+            inputs:
+              LOG_LEVEL: debug
+              JWT_SECRET: $JWT_SECRET
+              DB_REGION: apac
+              PRODUCTS_API_URL: 'https://fakestoreapi.com/products'
+            annotations:
+              require-adobe-auth: false
+              include-ims-credentials: true
+              final: true
+          # Reading the catalogue is public: a shopper browsing the store has
+          # no account yet, so no token is required.
+          list:
+            function: actions/products/list.js
+            web: 'yes'
+            runtime: nodejs:22
+            inputs:
+              LOG_LEVEL: debug
+              DB_REGION: apac
+            annotations:
+              require-adobe-auth: false
+              include-ims-credentials: true
+              final: true
     database:
       auto-provision: false
       region: apac
