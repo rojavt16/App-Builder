@@ -1,10 +1,3 @@
-/*
-* Authenticates a storefront user and returns a signed user token.
-*
-* Public endpoint. Failures deliberately return one generic message so the
-* response cannot be used to discover which email addresses are registered.
-*/
-
 const { Core } = require('@adobe/aio-sdk')
 const { checkMissingRequestInputs, stringParameters } = require('../utils')
 const { success, failure } = require('../lib/response')

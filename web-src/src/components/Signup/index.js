@@ -14,14 +14,13 @@ import {
 } from '@adobe/react-spectrum'
 import { useNavigate } from 'react-router-dom'
 
+import './Signup.css'
+
 import { signup, saveSession } from '../../services/authService'
 
 export default function Signup () {
   const navigate = useNavigate()
 
-  // navigate() unmounts this page, but a blurred text field can still deliver a
-  // final change event afterwards. Every setState is gated on this so a late
-  // event is dropped instead of warning about updating an unmounted component.
   const isMounted = useRef(true)
   useEffect(() => () => { isMounted.current = false }, [])
 
@@ -62,9 +61,7 @@ export default function Signup () {
       if (response.statusCode === 201) {
         saveSession(response.token, response.user)
         alert(response.message)
-        // no form reset here: this page unmounts on the next line, and clearing
-        // the controlled fields first is what queued the stray change event
-        navigate('/account')
+        navigate('/products')
       }
     } catch (error) {
       if (!isMounted.current) {
@@ -102,7 +99,12 @@ export default function Signup () {
           Sign up to continue
         </Text>
 
-        <Form>
+        <Form
+          onSubmit={(e) => {
+            e.preventDefault()
+            handleSignup()
+          }}
+        >
           <TextField
             label="Full Name"
             value={formData.name}
@@ -137,9 +139,9 @@ export default function Signup () {
 
           <Button
             variant="cta"
+            type="submit"
             marginTop="size-200"
             isDisabled={busy}
-            onPress={handleSignup}
           >
             {busy ? 'Signing up ...' : 'Sign Up'}
           </Button>
@@ -148,10 +150,7 @@ export default function Signup () {
         <Text marginTop="size-200">
           Already have an account?{' '}
           <span
-            style={{
-              color: '#1473e6',
-              cursor: 'pointer'
-            }}
+            className="auth-switch-link"
             onClick={() => navigate('/login')}
           >
             Login

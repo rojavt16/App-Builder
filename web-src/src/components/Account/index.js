@@ -18,11 +18,6 @@ import { useNavigate } from 'react-router-dom'
 
 import { validateToken, getSession, clearSession } from '../../services/authService'
 
-/*
- * Lands here after signup or login. Calling validate-token on mount is what
- * exercises the token-validation action: the token is only trusted once the
- * backend has checked its signature, its expiry, and that the account still exists.
- */
 export default function Account () {
   const navigate = useNavigate()
 

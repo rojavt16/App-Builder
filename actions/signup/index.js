@@ -1,11 +1,3 @@
-/*
-* Creates a storefront user account and returns a signed user token.
-*
-* Public endpoint: a new customer has no token yet, so `require-adobe-auth` is off
-* for this action. Passwords are hashed before they reach the database and the
-* stored hash and salt are never returned to the caller.
-*/
-
 const { Core } = require('@adobe/aio-sdk')
 const { checkMissingRequestInputs, stringParameters } = require('../utils')
 const { success, failure } = require('../lib/response')
@@ -20,12 +12,6 @@ const {
 
 const DUPLICATE_MESSAGE = 'User already exists'
 
-/**
- * Detects a unique-index violation on the users collection.
- *
- * @param {Error} error the error thrown by the insert
- * @returns {boolean}
- */
 function isDuplicateKey (error) {
   return error?.httpStatusCode === 409 || /duplicate key|e11000/i.test(error?.message || '')
 }
@@ -63,7 +49,6 @@ async function main (params) {
     return await withDb(params, async (client) => {
       const userCollection = client.collection('users')
 
-      // friendly pre-check; the unique index below is what actually guarantees uniqueness
       if (await findOneOrNull(userCollection, { email })) {
         return failure(409, DUPLICATE_MESSAGE, logger)
       }

@@ -9,5 +9,13 @@
     ],
     "parserOptions": {
         "ecmaVersion": "latest"
+    },
+    "rules": {
+        "no-empty": [
+            "error",
+            {
+                "allowEmptyCatch": true
+            }
+        ]
     }
 }

@@ -1,0 +1,14 @@
+.auth-switch-link {
+  color: #1473e6;
+  cursor: pointer;
+}
+
+.auth-switch-link:hover {
+  text-decoration: underline;
+}
+
+.auth-switch-link:focus-visible {
+  outline: 2px solid #1473e6;
+  outline-offset: 2px;
+  border-radius: 2px;
+}

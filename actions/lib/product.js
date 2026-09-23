@@ -1,23 +1,9 @@
-/*
-* Product shape validation, normalization, and mapping from the source feed.
-*
-* The collection has a schema validator, but that only rejects a bad document at
-* write time with an opaque database error. Validating here lets the ingest action
-* say exactly which item failed and why, and lets every product be normalized to
-* one consistent shape before it is stored.
-*/
-
 const CATEGORY_MAX_LENGTH = 100
 const TITLE_MAX_LENGTH = 300
 const DESCRIPTION_MAX_LENGTH = 2000
 const MAX_RATING = 5
+const DEFAULT_STOCK = 25
 
-/**
- * Coerces a value to a finite number, or returns null when it is not numeric.
- *
- * @param {*} value the raw value
- * @returns {number|null}
- */
 function toNumber (value) {
   if (value === null || value === undefined || value === '') {
     return null
@@ -26,22 +12,10 @@ function toNumber (value) {
   return Number.isFinite(parsed) ? parsed : null
 }
 
-/**
- * Trims a value to a string, or returns '' when it is absent.
- *
- * @param {*} value the raw value
- * @returns {string}
- */
 function toText (value) {
   return value === null || value === undefined ? '' : String(value).trim()
 }
 
-/**
- * Validates and normalizes one product.
- *
- * @param {*} raw the candidate item
- * @returns {{product: object}|{error: string}} the stored shape, or why it was rejected
- */
 function validateProduct (raw) {
   if (typeof raw !== 'object' || raw === null || Array.isArray(raw)) {
     return { error: 'item must be an object' }
@@ -101,7 +75,6 @@ function validateProduct (raw) {
       sku,
       title,
       description,
-      // rounded to whole cents so arithmetic and sorting stay predictable
       price: Math.round(price * 100) / 100,
       currency: toText(raw.currency) || 'USD',
       category,
@@ -117,23 +90,12 @@ function validateProduct (raw) {
   }
 }
 
-/**
- * Maps one item from the DummyJSON API onto this catalog's product shape.
- *
- * The source already supplies a unique sku, brand, stock and a flat rating, so
- * this is mostly a rename. Its numeric `id` is kept as `sourceId` for traceability,
- * and `thumbnail` becomes the catalog image.
- *
- * @param {object} raw an item from https://dummyjson.com/products
- * @returns {object} an unvalidated product in this catalog's shape
- */
 function fromDummyJson (raw) {
   return {
     sku: raw?.sku,
     title: raw?.title,
     description: raw?.description,
     price: raw?.price,
-    // the source quotes prices in US dollars
     currency: 'USD',
     category: raw?.category,
     brand: raw?.brand,
@@ -146,16 +108,6 @@ function fromDummyJson (raw) {
   }
 }
 
-/**
- * Maps one item from the Fake Store API onto this catalog's product shape.
- *
- * That source supplies no sku, brand or stock, and nests its rating as
- * `{ rate, count }`. The sku is derived from the source id so re-running the
- * ingest recognises the same item as a duplicate instead of storing it twice.
- *
- * @param {object} raw an item from https://fakestoreapi.com/products
- * @returns {object} an unvalidated product in this catalog's shape
- */
 function fromFakeStore (raw) {
   return {
     sku: `FS-${raw?.id}`,
@@ -164,9 +116,8 @@ function fromFakeStore (raw) {
     price: raw?.price,
     currency: 'USD',
     category: raw?.category,
-    // not supplied by this source, so left blank rather than invented
     brand: '',
-    stock: 0,
+    stock: DEFAULT_STOCK,
     rating: raw?.rating?.rate,
     ratingCount: raw?.rating?.count,
     image: raw?.image,
@@ -175,18 +126,6 @@ function fromFakeStore (raw) {
   }
 }
 
-/**
- * Maps one feed item, choosing the mapper that matches the source.
- *
- * The two supported feeds are told apart by their rating: Fake Store nests it as
- * `{ rate, count }` while DummyJSON keeps it a flat number. Detecting the shape
- * rather than trusting a configured source name means PRODUCTS_API_URL can be
- * repointed without touching code, and a feed that runs locally but is blocked
- * from Adobe Runtime can be swapped for one that is not.
- *
- * @param {object} raw an item from either supported feed
- * @returns {object} an unvalidated product in this catalog's shape
- */
 function mapSourceItem (raw) {
   const nestedRating = raw !== null && typeof raw === 'object' &&
     typeof raw.rating === 'object' && raw.rating !== null

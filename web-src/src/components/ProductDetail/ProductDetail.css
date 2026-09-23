@@ -1,0 +1,82 @@
+.pdp__media {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+}
+
+.pdp__image {
+  max-height: 100%;
+  max-width: 100%;
+  object-fit: contain;
+}
+
+.pdp__category {
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: #6e6e6e;
+}
+
+.pdp__brand {
+  color: #6e6e6e;
+}
+
+.pdp__price {
+  font-size: 28px;
+  font-weight: 700;
+}
+
+.pdp__stock {
+  font-weight: 600;
+}
+
+.pdp__stock--in {
+  color: #007a4d;
+}
+
+.pdp__stock--out {
+  color: #d31510;
+}
+
+.pdp__sku {
+  font-size: 12px;
+  color: #6e6e6e;
+}
+
+.related-card {
+  cursor: pointer;
+  transition: box-shadow 0.15s ease;
+}
+
+.related-card:hover {
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.12);
+}
+
+.related-card__link:focus-visible {
+  outline: 2px solid #1473e6;
+  outline-offset: 4px;
+  border-radius: 4px;
+}
+
+.related-card__media {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+}
+
+.related-card__image {
+  max-height: 100%;
+  max-width: 100%;
+  object-fit: contain;
+}
+
+.related-card__title {
+  font-size: 13px;
+  line-height: 1.3;
+}
+
+.related-card__price {
+  font-weight: 700;
+}

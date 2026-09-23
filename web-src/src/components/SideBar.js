@@ -31,15 +31,6 @@ function SideBar () {
                 <NavLink
                     className={({ isActive }) => `SideNav-itemLink ${isActive ? 'is-selected' : ''}`}
                     aria-current="page"
-                    to="/signup"
-                >
-                    Sign Up
-                </NavLink>
-            </li>
-            <li className="SideNav-item">
-                <NavLink
-                    className={({ isActive }) => `SideNav-itemLink ${isActive ? 'is-selected' : ''}`}
-                    aria-current="page"
                     to="/login"
                 >
                     Log In

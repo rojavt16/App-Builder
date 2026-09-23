@@ -1,24 +1,3 @@
-/*
-* Bulk-ingests the product catalog from an external product feed.
-*
-* Both DummyJSON and the Fake Store API are supported; the feed shape is detected
-* per item, so PRODUCTS_API_URL can point at either.
-*
-*   POST /api/v1/web/App Builder/ingest
-*   Authorization: Bearer <user token>
-*   {}                      fetch the feed and add anything not already stored
-*   { "replace": true }     empty the collection first, then load the feed
-*
-* A caller can also push its own array instead of hitting the source API:
-*
-*   { "products": [ { "sku": "...", "title": "...", "price": 9.99, "category": "..." } ] }
-*
-* Writing to the catalog is privileged, so unlike the product read actions this one
-* requires a valid user token. Every item is validated before any write, and SKUs
-* already stored are skipped rather than failing the batch, which makes the action
-* safe to run repeatedly against the same feed.
-*/
-
 const { Core } = require('@adobe/aio-sdk')
 const { stringParameters } = require('../utils')
 const { success, failure } = require('../lib/response')
@@ -28,27 +7,15 @@ const { validateProduct, mapSourceItem } = require('../lib/product')
 
 const COLLECTION = 'products'
 const MAX_BATCH = 1000
-// limit=0 returns the whole catalog; without it the source pages at 30 items
 const DEFAULT_SOURCE_URL = 'https://dummyjson.com/products?limit=0'
 const SOURCE_TIMEOUT_MS = 15000
 
-/**
- * Fetches the product feed from the source API.
- *
- * The request carries its own timeout so a slow upstream fails with a clear
- * message instead of running the action out of its execution budget.
- *
- * @param {string} url the source feed url
- * @returns {Promise<object[]>} the raw feed items
- */
 async function fetchSourceProducts (url) {
   const controller = new AbortController()
   const timer = setTimeout(() => controller.abort(), SOURCE_TIMEOUT_MS)
 
   let response
   try {
-    // the source sits behind bot protection that rejects requests with no
-    // User-Agent, which is what a bare runtime fetch sends
     response = await fetch(url, {
       signal: controller.signal,
       headers: {
@@ -70,8 +37,6 @@ async function fetchSourceProducts (url) {
   }
 
   const body = await response.json()
-  // the source wraps its array as { products, total, skip, limit }; a bare array
-  // is accepted too so another feed can be pointed at this action unchanged
   const feed = Array.isArray(body) ? body : body?.products
   if (!Array.isArray(feed)) {
     throw new Error('source API did not return a product array')
@@ -90,7 +55,6 @@ async function main (params) {
       return failure(error.statusCode, error.message, logger)
     }
 
-    // an explicit array wins; otherwise pull the feed from the source API
     const usingRequestBody = params.products !== undefined
     const sourceUrl = params.PRODUCTS_API_URL || DEFAULT_SOURCE_URL
     let incoming
@@ -122,8 +86,6 @@ async function main (params) {
       return failure(400, `cannot ingest more than ${MAX_BATCH} products per request`, logger)
     }
 
-    // validate everything up front so a bad item is reported by position rather
-    // than surfacing later as an opaque database error
     const candidates = []
     const errors = []
     const seenInBatch = new Set()
@@ -158,8 +120,6 @@ async function main (params) {
         logger.info(`${user.email} cleared ${removed} existing products before ingest`)
       }
 
-      // distinct returns every stored sku; findArray would only return the first
-      // batch and would let an already-stored sku through to insertMany
       const stored = replace ? new Set() : new Set(await collection.distinct('sku') || [])
       const toInsert = candidates.filter((product) => !stored.has(product.sku))
       const skipped = candidates.length - toInsert.length

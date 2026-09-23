@@ -14,14 +14,11 @@
  * @returns {string}
  *
  */
-// Top-level parameter names whose values must never reach the logs: action inputs
-// such as JWT_SECRET and SERVICE_API_KEY, and request fields such as password.
 const SENSITIVE_PARAM = /(secret|password|passwd|credential|api[-_]?key|authorization|bearer)/i
 
 function stringParameters (params) {
   // shallow copy to not override first level references
   const paramsShallowCopy = { ...params }
-  // redact secret action inputs and secret request fields
   for (const key of Object.keys(paramsShallowCopy)) {
     if (SENSITIVE_PARAM.test(key)) {
       paramsShallowCopy[key] = '<hidden>'

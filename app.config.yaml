@@ -16,15 +16,8 @@ application:
               require-adobe-auth: true
               final: true
 
-          # ---- Storefront authentication -------------------------------------
-          # These three are public: a customer signing up or logging in has no
-          # Adobe IMS token, so require-adobe-auth must be off. They authenticate
-          # callers with the app's own JWT user tokens instead.
-          # include-ims-credentials injects the OAuth S2S credentials the actions
-          # need to mint a database token; final: true stops a caller from
-          # overriding JWT_SECRET or DB_REGION through request parameters.
           signup:
-            function: actions/auth/signup.js
+            function: actions/signup/index.js
             web: 'yes'
             runtime: nodejs:22
             inputs:
@@ -36,7 +29,7 @@ application:
               include-ims-credentials: true
               final: true
           login:
-            function: actions/auth/login.js
+            function: actions/login/index.js
             web: 'yes'
             runtime: nodejs:22
             inputs:
@@ -48,7 +41,7 @@ application:
               include-ims-credentials: true
               final: true
           validate-token:
-            function: actions/auth/validate.js
+            function: actions/validate-token/index.js
             web: 'yes'
             runtime: nodejs:22
             inputs:
@@ -60,26 +53,32 @@ application:
               include-ims-credentials: true
               final: true
 
-          # ---- Catalog ---------------------------------------------------------
-          # Writing to the catalog is privileged, so ingest requires a storefront
-          # user token. It pulls the feed from PRODUCTS_API_URL by default.
           ingest:
-            function: actions/products/ingest.js
+            function: actions/ingest/index.js
             web: 'yes'
             runtime: nodejs:22
             inputs:
               LOG_LEVEL: debug
               JWT_SECRET: $JWT_SECRET
               DB_REGION: apac
-              PRODUCTS_API_URL: 'https://fakestoreapi.com/products'
+              PRODUCTS_API_URL: 'https://dummyjson.com/products?limit=0'
             annotations:
               require-adobe-auth: false
               include-ims-credentials: true
               final: true
-          # Reading the catalogue is public: a shopper browsing the store has
-          # no account yet, so no token is required.
           list:
-            function: actions/products/list.js
+            function: actions/list/index.js
+            web: 'yes'
+            runtime: nodejs:22
+            inputs:
+              LOG_LEVEL: debug
+              DB_REGION: apac
+            annotations:
+              require-adobe-auth: false
+              include-ims-credentials: true
+              final: true
+          detail:
+            function: actions/detail/index.js
             web: 'yes'
             runtime: nodejs:22
             inputs:

@@ -14,14 +14,13 @@ import {
 } from '@adobe/react-spectrum'
 import { useNavigate } from 'react-router-dom'
 
+import './Login.css'
+
 import { login, saveSession } from '../../services/authService'
 
 export default function Login () {
   const navigate = useNavigate()
 
-  // navigate() unmounts this page, but a blurred text field can still deliver a
-  // final change event afterwards. Every setState is gated on this so a late
-  // event is dropped instead of warning about updating an unmounted component.
   const isMounted = useRef(true)
   useEffect(() => () => { isMounted.current = false }, [])
 
@@ -55,9 +54,7 @@ export default function Login () {
       if (response.statusCode === 200) {
         saveSession(response.token, response.user)
         alert(response.message)
-        // no form reset here: this page unmounts on the next line, and clearing
-        // the controlled fields first is what queued the stray change event
-        navigate('/account')
+        navigate('/products')
       }
     } catch (error) {
       if (!isMounted.current) {
@@ -95,7 +92,12 @@ export default function Login () {
           Log in to continue
         </Text>
 
-        <Form>
+        <Form
+          onSubmit={(e) => {
+            e.preventDefault()
+            handleLogin()
+          }}
+        >
           <TextField
             label="Email"
             type="email"
@@ -114,9 +116,9 @@ export default function Login () {
 
           <Button
             variant="cta"
+            type="submit"
             marginTop="size-200"
             isDisabled={busy}
-            onPress={handleLogin}
           >
             {busy ? 'Logging in ...' : 'Log In'}
           </Button>
@@ -125,10 +127,7 @@ export default function Login () {
         <Text marginTop="size-200">
           Do not have an account?{' '}
           <span
-            style={{
-              color: '#1473e6',
-              cursor: 'pointer'
-            }}
+            className="auth-switch-link"
             onClick={() => navigate('/signup')}
           >
             Sign up

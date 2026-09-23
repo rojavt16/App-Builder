@@ -1,12 +1,3 @@
-/*
-* Validates a storefront user token.
-*
-* The UI calls this on load to decide whether a stored token is still good, and it
-* doubles as the reference implementation of the guard that protected actions use.
-* Signature and expiry are checked locally; the account is then re-read from the
-* database so a deleted user cannot keep using an unexpired token.
-*/
-
 const { Core } = require('@adobe/aio-sdk')
 const { stringParameters } = require('../utils')
 const { success, failure } = require('../lib/response')
