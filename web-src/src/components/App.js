@@ -12,6 +12,7 @@ import { About } from './About'
 import Signup from './Signup'
 import Login from './Login'
 import Account from './Account'
+import RequireAuth from './RequireAuth'
 import ProductList from './ProductList'
 import ProductDetail from './ProductDetail'
 
@@ -48,8 +49,8 @@ function App (props) {
                 <Route path='/actions' element={<ActionsForm runtime={props.runtime} ims={props.ims} />}/>
                 <Route path='/signup' element={<Signup />}/>
                 <Route path='/login' element={<Login />}/>
-                <Route path='/products' element={<ProductList />}/>
-                <Route path='/products/:sku' element={<ProductDetail />}/>
+                <Route path='/products' element={<RequireAuth><ProductList /></RequireAuth>}/>
+                <Route path='/products/:sku' element={<RequireAuth><ProductDetail /></RequireAuth>}/>
                 <Route path='/account' element={<Account />}/>
                 <Route path='/about' element={<About />}/>
               </Routes>

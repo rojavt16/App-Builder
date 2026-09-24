@@ -6,9 +6,7 @@ import './Header.css'
 
 const LINKS = [
   { to: '/login', label: 'Log In' },
-  { to: '/products', label: 'Products' },
   { to: '/account', label: 'My Account' },
-  { to: '/actions', label: 'Your App Actions' },
   { to: '/about', label: 'About App Builder' }
 ]
 
